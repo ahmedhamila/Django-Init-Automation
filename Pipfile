@@ -7,13 +7,9 @@ name = "pypi"
 django = "==4.1"
 django-cors-headers = "==4.2"
 djangorestframework = "==3.14.0"
-djangorestframework-simplejwt = "==5.3.1"
-djangorestframework-camel-case = "==1.4.2"
-drf-standardized-errors = "==0.14.0"
 drf-yasg = "==1.21.7"
 pillow = "==10.3"
 psycopg2-binary = "2.9.9"
-whitenoise = "==6.6.0"
 python-decouple = "==3.8"
 
 [dev-packages]

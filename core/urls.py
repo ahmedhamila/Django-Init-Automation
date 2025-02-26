@@ -1,3 +1,4 @@
+from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -21,8 +22,6 @@ schema_view = get_schema_view(
 )
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/example_app/", include("src.example_app.urls")),
-    path("api/users/", include("src.users.urls")),
     path(
         "",
         schema_view.with_ui("swagger", cache_timeout=0),

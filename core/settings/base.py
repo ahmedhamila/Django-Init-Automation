@@ -7,10 +7,10 @@ This module defines the base configuration constants and settings for the Django
 import os
 
 from core.config.cors import *
-from core.config.jwt import *
 from core.env import BASE_DIR
 from core.env import config
 
+SECRET_KEY="django-insecure-h+604yp060*j43ss8ygvlkbt+os*o!3i$m-6wf6=51u+#t6iz+"
 
 """
 Third-party applications used in the project.
@@ -19,15 +19,13 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_yasg",
-    "rest_framework_simplejwt",
-    "djangorestframework_camel_case",
-    "drf_standardized_errors",
 ]
 
 """
 Local applications specific to this Django project.
 """
-LOCAL_APPS = ["core", "src.utils", "src.example_app", "src.users"]
+LOCAL_APPS = [
+    "core"]
 
 
 """
@@ -44,33 +42,12 @@ INSTALLED_APPS = [
     *THIRD_PARTY_APPS,
 ]
 
-"""
-Configuration for Django Rest Framework.
-"""
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_RENDERER_CLASSES": (
-        "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
-        "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
-    ),
-    "DEFAULT_PARSER_CLASSES": (
-        "djangorestframework_camel_case.parser.CamelCaseJSONParser",
-        "djangorestframework_camel_case.parser.CamelCaseFormParser",
-        "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
-    ),
-    "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
-}
-
-DRF_STANDARDIZED_ERRORS = {"ENABLE_IN_DEBUG_FOR_UNHANDLED_EXCEPTIONS": True}
 
 """
 Middleware stack for request/response processing.
 """
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -143,10 +120,7 @@ DATABASES = {
     }
 }
 
-"""
-Custom user model for authentication.
-"""
-AUTH_USER_MODEL = "users.TemplateUser"
+
 
 """
 Internationalization and localization settings.
@@ -162,10 +136,6 @@ Static files (CSS, JavaScript, Images) serving configuration.
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
-"""
-Static files storage configuration for production.
-"""
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 """
 Default primary key field type configuration.

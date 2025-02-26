@@ -42,7 +42,7 @@ fi
 
 # Step 4: Start Docker Compose (Postgres + Django)
 echo "Starting Docker containers..."
-docker-compose up -d --build
+docker-compose up -d --build 
 
 echo "Django app '$APP_NAME' with model '$MODEL_NAME' is being created..."
 echo "Added fields: ${FIELDS[*]}"

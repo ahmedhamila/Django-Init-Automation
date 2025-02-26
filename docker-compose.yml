@@ -16,6 +16,10 @@ services:
     build: .
     command: >
       bash -c "
+      pipenv install &&
+      if [ '${APP_NAME}' ]; then
+        pipenv run python manage.py startcustomapp ${APP_NAME} --src --model ${MODEL_NAME} --fields ${MODEL_FIELDS};
+      fi &&
       pipenv run python manage.py makemigrations &&
       pipenv run python manage.py migrate &&
       if [ '${DJANGO_SUPERUSER_USERNAME}' ]; then

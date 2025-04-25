@@ -23,7 +23,8 @@ services:
       pipenv install &&
       if [ '${APP_NAME}' ] && [ ! -d 'src/${APP_NAME}' ]; then
         echo 'Creating new app ${APP_NAME}...' &&
-        bash /code/generate_app_files.sh ${APP_NAME} \"${MODELS_DATA}\";
+        sed -i 's/\r$//' /code/scripts/generate_app_files.sh &&  # This line fixes the endings
+        bash /code/scripts/generate_app_files.sh ${APP_NAME} \"${MODELS_DATA}\";
       else
         if [ '${APP_NAME}' ]; then
           echo 'App ${APP_NAME} already exists, skipping creation.';

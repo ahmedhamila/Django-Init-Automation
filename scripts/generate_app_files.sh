@@ -165,10 +165,12 @@ if [ -f "$project_urls_path" ]; then
     fi
     
     # Add URL pattern if not present
-    include_path="path(\"${app_name}/\", include(\"${app_import_path}.urls\"))"
+    include_path="path(\\\"${app_name}/\\\", include(\\\"${app_import_path}.urls\\\"))"
     if ! grep -q "$include_path" "$project_urls_path"; then
+        # Use a different delimiter for sed (| instead of /)
         if grep -q "urlpatterns = \[" "$project_urls_path"; then
-            sed "s/urlpatterns = \[/urlpatterns = \[\n    $include_path,/" "$project_urls_path" > "$tmp_file"
+            # Using # as delimiter instead of / to avoid escaping issues
+            sed "s#urlpatterns = \[#urlpatterns = \[\n    $include_path,#" "$project_urls_path" > "$tmp_file"
             mv "$tmp_file" "$project_urls_path"
         else
             echo -e "\nurlpatterns = [\n    $include_path,\n]\n" >> "$project_urls_path"

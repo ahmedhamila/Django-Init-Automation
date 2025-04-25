@@ -3,7 +3,7 @@ FROM python:3.10-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libpq-dev gcc
+    libpq-dev gcc dos2unix
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -21,6 +21,7 @@ RUN pipenv install
 # Copy the project files to the container
 COPY . /code/
 
+RUN find /code -type f -name "*.sh" -exec dos2unix {} \;
 # Expose port 8000 to the outside world
 EXPOSE 8000
 

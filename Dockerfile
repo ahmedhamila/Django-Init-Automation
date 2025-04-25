@@ -21,7 +21,7 @@ RUN pipenv install
 # Copy the project files to the container
 COPY . /code/
 
-RUN find /code -type f -name "*.sh" -exec dos2unix {} \;
+RUN find /code/scripts -type f -name "*.sh" -exec dos2unix {} \;
 # Expose port 8000 to the outside world
 EXPOSE 8000
 

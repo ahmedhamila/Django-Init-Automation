@@ -19,138 +19,18 @@ services:
     env_file:
       - .env
     command: >
-      bash -c '
+      bash -c "
       pipenv install &&
-      if [ "${APP_NAME}" ] && [ ! -d "src/${APP_NAME}" ]; then
-        echo "Creating new app ${APP_NAME}..." &&
-        
-        # Create app directory
-        mkdir -p /code/src/${APP_NAME} &&
-        touch /code/src/${APP_NAME}/__init__.py &&
-        
-        # Create basic app files
-        echo "# ${APP_NAME} models" > /code/src/${APP_NAME}/models.py &&
-        echo "from django.db import models" >> /code/src/${APP_NAME}/models.py &&
-        
-        echo "# ${APP_NAME} serializers" > /code/src/${APP_NAME}/serializers.py &&
-        echo "from rest_framework import serializers" >> /code/src/${APP_NAME}/serializers.py &&
-        
-        echo "# ${APP_NAME} views" > /code/src/${APP_NAME}/views.py &&
-        echo "from rest_framework import viewsets" >> /code/src/${APP_NAME}/views.py &&
-        
-        # Create apps.py
-        echo "from django.apps import AppConfig" > /code/src/${APP_NAME}/apps.py &&
-        echo "" >> /code/src/${APP_NAME}/apps.py &&
-        echo "class $(tr a-z A-Z <<< ${APP_NAME:0:1})${APP_NAME:1}Config(AppConfig):" >> /code/src/${APP_NAME}/apps.py &&
-        echo "    default_auto_field = \"django.db.models.BigAutoField\"" >> /code/src/${APP_NAME}/apps.py &&
-        echo "    name = \"src.${APP_NAME}\"" >> /code/src/${APP_NAME}/apps.py &&
-        
-        # Process models
-        IFS=";" read -ra MODEL_ENTRIES <<< "${MODELS_DATA}" &&
-        for MODEL_ENTRY in "${MODEL_ENTRIES[@]}"; do
-          IFS=":" read -r MODEL_NAME FIELDS <<< "${MODEL_ENTRY}" &&
-          
-          # Clean model name
-          MODEL_NAME="$(tr a-z A-Z <<< ${MODEL_NAME:0:1})${MODEL_NAME:1}" &&
-          MODEL_NAME="${MODEL_NAME// /}" &&
-          
-          # Process fields
-          IFS="," read -ra FIELD_LIST <<< "${FIELDS}" &&
-          FIRST_FIELD="" &&
-          
-          # Add model to models.py
-          echo "" >> /code/src/${APP_NAME}/models.py &&
-          echo "class ${MODEL_NAME}(models.Model):" >> /code/src/${APP_NAME}/models.py &&
-          
-          for FIELD in "${FIELD_LIST[@]}"; do
-            if [ -z "${FIRST_FIELD}" ]; then
-              FIRST_FIELD="${FIELD}"
-            fi
-            echo "    ${FIELD} = models.CharField(max_length=255, default=\"\")" >> /code/src/${APP_NAME}/models.py
-          done &&
-          
-          echo "" >> /code/src/${APP_NAME}/models.py &&
-          echo "    def __str__(self):" >> /code/src/${APP_NAME}/models.py &&
-          echo "        return self.${FIRST_FIELD}" >> /code/src/${APP_NAME}/models.py &&
-          
-          # Add serializer
-          echo "" >> /code/src/${APP_NAME}/serializers.py &&
-          echo "from src.${APP_NAME}.models import ${MODEL_NAME}" >> /code/src/${APP_NAME}/serializers.py &&
-          echo "" >> /code/src/${APP_NAME}/serializers.py &&
-          echo "class ${MODEL_NAME}Serializer(serializers.ModelSerializer):" >> /code/src/${APP_NAME}/serializers.py &&
-          echo "    class Meta:" >> /code/src/${APP_NAME}/serializers.py &&
-          echo "        model = ${MODEL_NAME}" >> /code/src/${APP_NAME}/serializers.py &&
-          echo "        fields = \"__all__\"" >> /code/src/${APP_NAME}/serializers.py &&
-          
-          # Add viewset
-          echo "" >> /code/src/${APP_NAME}/views.py &&
-          echo "from src.${APP_NAME}.models import ${MODEL_NAME}" >> /code/src/${APP_NAME}/views.py &&
-          echo "from src.${APP_NAME}.serializers import ${MODEL_NAME}Serializer" >> /code/src/${APP_NAME}/views.py &&
-          echo "" >> /code/src/${APP_NAME}/views.py &&
-          echo "class ${MODEL_NAME}ViewSet(viewsets.ModelViewSet):" >> /code/src/${APP_NAME}/views.py &&
-          echo "    queryset = ${MODEL_NAME}.objects.all()" >> /code/src/${APP_NAME}/views.py &&
-          echo "    serializer_class = ${MODEL_NAME}Serializer" >> /code/src/${APP_NAME}/views.py
-        done &&
-        
-        # Create urls.py
-        echo "from django.urls import include, path" > /code/src/${APP_NAME}/urls.py &&
-        echo "from rest_framework import routers" >> /code/src/${APP_NAME}/urls.py &&
-        
-        # Add imports for each viewset
-        for MODEL_ENTRY in "${MODEL_ENTRIES[@]}"; do
-          IFS=":" read -r MODEL_NAME FIELDS <<< "${MODEL_ENTRY}" &&
-          MODEL_NAME="$(tr a-z A-Z <<< ${MODEL_NAME:0:1})${MODEL_NAME:1}" &&
-          MODEL_NAME="${MODEL_NAME// /}" &&
-          echo "from src.${APP_NAME}.views import ${MODEL_NAME}ViewSet" >> /code/src/${APP_NAME}/urls.py
-        done &&
-        
-        echo "" >> /code/src/${APP_NAME}/urls.py &&
-        echo "router = routers.DefaultRouter()" >> /code/src/${APP_NAME}/urls.py &&
-        
-        # Register each viewset
-        for MODEL_ENTRY in "${MODEL_ENTRIES[@]}"; do
-          IFS=":" read -r MODEL_NAME FIELDS <<< "${MODEL_ENTRY}" &&
-          MODEL_NAME="$(tr a-z A-Z <<< ${MODEL_NAME:0:1})${MODEL_NAME:1}" &&
-          MODEL_NAME="${MODEL_NAME// /}" &&
-          echo "router.register(r\"${MODEL_NAME,,}\", ${MODEL_NAME}ViewSet)" >> /code/src/${APP_NAME}/urls.py
-        done &&
-        
-        echo "" >> /code/src/${APP_NAME}/urls.py &&
-        echo "urlpatterns = [" >> /code/src/${APP_NAME}/urls.py &&
-        echo "    path(\"\", include(router.urls))," >> /code/src/${APP_NAME}/urls.py &&
-        echo "]" >> /code/src/${APP_NAME}/urls.py &&
-        
-        # Register in project URLs
-        if [ -f "/code/core/urls.py" ]; then
-          # Check if import exists
-          if ! grep -q "from django.urls import include, path" "/code/core/urls.py"; then
-            sed -i "1i from django.urls import include, path" "/code/core/urls.py"
-          fi
-          
-          # Add URL pattern if not present
-          if ! grep -q "path(\"${APP_NAME}/\", include(\"src.${APP_NAME}.urls\"))" "/code/core/urls.py"; then
-            sed -i "/urlpatterns = \\[/a\\    path(\"${APP_NAME}/\", include(\"src.${APP_NAME}.urls\"))," "/code/core/urls.py"
-          fi
-        fi
-        
-        # Register in settings
-        if [ -f "/code/core/settings/base.py" ]; then
-          # Add LOCAL_APPS if not present
-          if ! grep -q "LOCAL_APPS = \\[" "/code/core/settings/base.py"; then
-            echo "LOCAL_APPS = []" >> "/code/core/settings/base.py"
-          fi
-          
-          # Add app if not present
-          if ! grep -q "\"src.${APP_NAME}\"" "/code/core/settings/base.py"; then
-            sed -i "/LOCAL_APPS = \\[/a\\    \"src.${APP_NAME}\"," "/code/core/settings/base.py"
-          fi
-        fi
+      if [ '${APP_NAME}' ] && [ ! -d 'src/${APP_NAME}' ]; then
+        echo 'Creating new app ${APP_NAME}...' &&
+        sed -i 's/\r$//' /code/scripts/generate_app_files.sh &&  # This line fixes the endings
+        bash /code/scripts/generate_app_files.sh ${APP_NAME} \"${MODELS_DATA}\";
       else
-        if [ "${APP_NAME}" ]; then
-          echo "App ${APP_NAME} already exists, skipping creation."
+        if [ '${APP_NAME}' ]; then
+          echo 'App ${APP_NAME} already exists, skipping creation.';
         fi
       fi
-      '
+      "
 
   web:
     build: .

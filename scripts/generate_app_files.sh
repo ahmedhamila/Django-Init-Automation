@@ -82,6 +82,9 @@ app_class_name="$(tr '[:lower:]' '[:upper:]' <<< ${app_name:0:1})${app_name:1}"
 echo "Creating app directory structure: $destination_dir"
 mkdir -p "$destination_dir"
 
+echo "Creating migrations directory"
+mkdir -p "$destination_dir/migrations"
+touch "$destination_dir/migrations/__init__.py"
 # Create __init__.py
 touch "$destination_dir/__init__.py"
 

@@ -29,7 +29,9 @@ services:
         if [ '${APP_NAME}' ]; then
           echo 'App ${APP_NAME} already exists, skipping creation.';
         fi
-      fi
+      fi&&
+        pipenv run python manage.py makemigrations &&
+        pipenv run python manage.py migrate
       "
 
   web:
